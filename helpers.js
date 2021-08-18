@@ -3,7 +3,7 @@ const mimetypes = require("./mimetypes");
 const path = require("path");
 
 
-exports.send = function(req, res, msg, id, status = 200) {
+exports.send = function(req, res, msg, status = 200) {
     res.statusCode = status;
     res.setHeader("Content-type", "application/json");
     res.end(JSON.stringify(msg));

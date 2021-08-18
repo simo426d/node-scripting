@@ -4,6 +4,7 @@ const api = {};
 
 api["/api/duck"] = require("./api/duck");
 api["/api/cat"] = require("./api/cat");
+api["/api/alien"] = require("./api/alien");
 
 module.exports = function(req, res){
     logger(req, res);
@@ -19,7 +20,37 @@ module.exports = function(req, res){
         return;
     }
 
-    // 
+    // - /^(?<route>\/api\/\w+)(?<params>(\/\w+)*)$/
+    const apiParamRX = /^(?<route>\/api\/\w+)(?<id>(\/\w+)*)$/;
+    result = endpoint.match(apiParamRX);
+    console.log(result);
+    if(result){
+        // api/duck/id
+        if(api[result.groups.route] && result.groups.id == null)
+        {
+            if(api[result.groups.route][req.method]){
+                api[result.groups.route][req.method].handler(req, res, result.groups.id); 
+                return;
+            }
+            helpers.send(req, res, {msg: "Metode ikke tilladt her"}, 405);
+            return;
+        }
+        if(api[result.groups.route] && result.groups.id != null)
+        {
+            if(api[result.groups.route][req.method]){
+                api[result.groups.route][req.method].handler(req, res, result.groups.id); 
+                return;
+            }
+            helpers.send(req, res, {msg: "Metode ikke tilladt her"}, 405);
+            return;
+        }           
+    }
+
+    helpers.send(req, res, {message: " 'Resource:' " + endpoint + " Not available"}, 404);
+
+
+    ////////////////////////////////////// CODE THAT HAVE BEEN USED ///////////////////////////////////
+
     // const apiRX = /^\/api\/\w+$/;
     // result = endpoint.match(apiRX);
     // // console.log(result);
@@ -35,30 +66,14 @@ module.exports = function(req, res){
     //     }       
     // }
 
-    const apiParamRX = /^(\/api\/\w+)(\/\w+)?/;
-    result = endpoint.match(apiParamRX);
-    // console.log(result);
-    if(result){
-        // api/duck/id
-        if(api[result[1]])
-        {
-            if(api[result[1]][req.method]){
-                api[result[1]][req.method].handler(req, res, result[2]); 
-                return;
-            }
-            helpers.send(req, res, {msg: "Metode ikke tilladt her"}, 405);
-            return;
-        }          
-    }
-
-    // API REGIX IMPROVED for ID and groups. (^\/api\/\w+)(\/?\w+$)
+    // API REGIX IMPROVED for ID and groups. /^(\/api\/\w+)(\/\w+)?/
 
     // if(endpoint === "/index.html")
     // {
     //     helpers.sendFile(req, res, "./static/index.html")
     //     return;
     // }
-    helpers.send(req, res, {message: " 'Resource:' " + endpoint + " Not available"}, 404);
+    
 
 
 
